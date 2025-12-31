@@ -75,3 +75,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
+
