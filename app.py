@@ -18,6 +18,8 @@ KEYWORDS = [
     "share buyback", "buyback"
 ]
 
+send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
+
 def get_json(path, params=None):
     r = requests.get(
         f"{BASE_URL}{path}",
@@ -73,8 +75,8 @@ def main():
         send_telegram(msg)
         break  # aynı run’da sadece 1 bildirim
 
+
 if __name__ == "__main__":
     main()
 
-send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
 
