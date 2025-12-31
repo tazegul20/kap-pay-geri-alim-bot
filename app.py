@@ -47,7 +47,6 @@ def send_telegram(msg):
         "disable_web_page_preview": False
     }, timeout=20).raise_for_status()
 
-send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
 
 def main():
     last_index = int(get_json("/lastDisclosureIndex")["lastDisclosureIndex"])
@@ -79,5 +78,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
+
 
 
