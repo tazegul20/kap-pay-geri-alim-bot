@@ -78,10 +78,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-    if os.getenv("GITHUB_ACTIONS") == "true" and BOT_TOKEN and CHAT_ID:
-        try:
-            send_telegram("✅ GitHub Actions otomatik çalışıyor (test)")
-        except Exception as e:
-            print("Telegram testi gönderilemedi:", e)
+
 
 
