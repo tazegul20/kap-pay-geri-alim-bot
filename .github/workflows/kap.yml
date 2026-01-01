@@ -39,6 +39,6 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           # opsiyonel:
-          KAP_LOOKBACK: "8000"
-          KAP_SLEEP: "0.2"
-          DEBUG: "0"
+          KAP_LOOKBACK: "800"
+          KAP_SLEEP: "0.05"
+          DEBUG: "1"
