@@ -2,7 +2,7 @@ name: KAP Pay Geri Alımı Bot
 
 on:
   schedule:
-    #- cron: "*/10 * * * *"   # her 5 dakikada bir (GitHub limiti için ideal)
+    - cron: "*/10 * * * *"
   workflow_dispatch:
 
 jobs:
@@ -16,8 +16,20 @@ jobs:
         with:
           python-version: "3.11"
 
+      # state.json’u kalıcı tutmak için cache
+      # key her run’da farklı; restore-keys sayesinde en son state bulunur.
+      - name: Cache state.json
+        uses: actions/cache@v4
+        with:
+          path: state.json
+          key: kap-state-${{ github.run_number }}
+          restore-keys: |
+            kap-state-
+
       - name: Paketler
-        run: pip install requests
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
 
       - name: Çalıştır
         run: python app.py
@@ -26,3 +38,7 @@ jobs:
           KAP_API_SECRET: ${{ secrets.KAP_API_SECRET }}
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          # opsiyonel:
+          KAP_LOOKBACK: "8000"
+          KAP_SLEEP: "0.2"
+          DEBUG: "0"
