@@ -181,7 +181,6 @@ def build_message(detail: Dict[str, Any]) -> str:
         msg += f"\nÖzet: {summary_tr}\n"
     return msg
 
-
 def main() -> None:
     if not API_KEY or not API_SECRET:
         raise RuntimeError("KAP_API_KEY / KAP_API_SECRET eksik (Secrets ayarlı mı?)")
@@ -192,17 +191,21 @@ def main() -> None:
     current_last = get_last_disclosure_index()
     log(f"current_last={current_last}, last_seen={last_seen}")
 
+    # SADECE İLERİYE YÖNELİK MOD:
+    # İlk çalıştırmada geçmişi tarama, mevcut son index'i işaretle ve çık.
     if last_seen <= 0:
-        start = max(0, current_last - LOOKBACK)
-    else:
-        start = max(0, min(last_seen + 1, current_last - LOOKBACK))
-
-    log(f"scan_start={start}")
+        state["last_seen_index"] = current_last
+        state["updated_at_unix"] = int(time.time())
+        save_state(state)
+        log(f"First run (forward-only). Set last_seen_index={current_last} and exit.")
+        return
 
     found_any = False
     max_processed = last_seen
 
-    idx = start
+    # ✅ Burada start yok: sadece yeni gelenlerden başla
+    idx = last_seen + 1
+
     while idx <= current_last:
         log(f"[BATCH] idx={idx} / current_last={current_last}")
 
@@ -225,6 +228,7 @@ def main() -> None:
             if di > batch_max:
                 batch_max = di
 
+            # zaten işlendiyse atla
             if di <= last_seen:
                 continue
 
