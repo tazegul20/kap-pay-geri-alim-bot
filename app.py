@@ -192,47 +192,45 @@ def main() -> None:
     current_last = get_last_disclosure_index()
     log(f"current_last={current_last}, last_seen={last_seen}")
 
-    # İlk çalıştırma ise: geriye doğru LOOKBACK kadar tarayarak kaçırmayı önle,
-    # ama yine de spam olmasın diye last_seen'i geriye alıp tarayacağız.
     if last_seen <= 0:
         start = max(0, current_last - LOOKBACK)
     else:
-        # normalde last_seen+1'den başla ama gene de küçük bir backfill yap:
         start = max(0, min(last_seen + 1, current_last - LOOKBACK))
 
     log(f"scan_start={start}")
 
-    # Tarama: 50'şer 50'şer ilerle
-    # Not: disclosureIndex artan varsayımıyla çalışır (API tanımı bunu ima ediyor).
     found_any = False
     max_processed = last_seen
 
     idx = start
     while idx <= current_last:
+        log(f"[BATCH] idx={idx} / current_last={current_last}")
+
         items = fetch_disclosures_from(idx)
+        log(f"[BATCH] got {len(items)} items")
+
         if not items:
             log(f"No items returned for idx={idx} (break)")
             break
 
-        # items içinde disclosureIndex'ler var
-        # bir sonraki sayfaya geçmek için en büyük index + 1
         batch_max = idx
-        for d in items:
+
+        for i, d in enumerate(items, start=1):
             di = safe_int(d.get("disclosureIndex"), 0)
+            log(f"  [ITEM {i}/{len(items)}] disclosureIndex={di}")
+
             if di <= 0:
                 continue
+
             if di > batch_max:
                 batch_max = di
 
-            # zaten işlendiyse atla
             if di <= last_seen:
                 continue
 
-            # hızlı ön filtre (title/subject yoksa bile detail ile yakalayacağız)
             title = str(d.get("title") or "")
             quick_hit = contains_keyword(title)
 
-            # Detaya in (fileType=html)
             try:
                 detail = fetch_detail(di)
             except Exception as e:
@@ -252,7 +250,6 @@ def main() -> None:
 
             time.sleep(SLEEP)
 
-        # ilerleme: eğer batch_max ilerlemediyse sonsuz döngü olmasın
         if batch_max <= idx:
             log(f"batch_max ({batch_max}) <= idx ({idx}) (break)")
             break
@@ -260,13 +257,11 @@ def main() -> None:
         idx = batch_max + 1
         time.sleep(SLEEP)
 
-    # state güncelle
     state["last_seen_index"] = max_processed if max_processed > 0 else current_last
     state["updated_at_unix"] = int(time.time())
     save_state(state)
 
     log(f"done. found_any={found_any}, saved last_seen_index={state['last_seen_index']}")
-
 
 if __name__ == "__main__":
     main()
